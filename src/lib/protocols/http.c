@@ -503,9 +503,18 @@ static void check_content_type_and_change_protocol(struct ndpi_detection_module_
     return;
 
   if((flow->http.url == NULL)
+     && (flow->http.proxy == NULL)
      && (packet->http_url_name.len > 0)
      && (packet->host_line.len > 0)) {
-    int len = packet->http_url_name.len + packet->host_line.len + 1;
+    int len;
+
+    flow->http.method = ndpi_http_str2method((const char*)flow->packet.http_method.ptr,
+					     (u_int16_t)flow->packet.http_method.len);
+
+    if(flow->http.method == NDPI_HTTP_METHOD_CONNECT)
+      len = packet->host_line.len + 1;
+    else
+      len = packet->http_url_name.len + packet->host_line.len + 1;
 
     if(isdigit(packet->host_line.ptr[0])
        && (packet->host_line.len < 21))
@@ -514,15 +523,25 @@ static void check_content_type_and_change_protocol(struct ndpi_detection_module_
     flow->http.url = ndpi_malloc(len);
     if(flow->http.url) {
       strncpy(flow->http.url, (char*)packet->host_line.ptr, packet->host_line.len);
-      strncpy(&flow->http.url[packet->host_line.len], (char*)packet->http_url_name.ptr,
+
+      if(flow->http.method != NDPI_HTTP_METHOD_CONNECT)
+	strncpy(&flow->http.url[packet->host_line.len], (char*)packet->http_url_name.ptr,
 	      packet->http_url_name.len);
       flow->http.url[len-1] = '\0';
 
       ndpi_check_http_url(ndpi_struct, flow, &flow->http.url[packet->host_line.len]);
     }
 
-    flow->http.method = ndpi_http_str2method((const char*)flow->packet.http_method.ptr,
-					     (u_int16_t)flow->packet.http_method.len);
+    if(flow->http.method == NDPI_HTTP_METHOD_CONNECT) {
+      len = packet->http_url_name.len + 1;
+
+      flow->http.proxy = ndpi_malloc(len);
+      if(flow->http.proxy) {
+	strncpy(flow->http.proxy, (char*)packet->http_url_name.ptr,
+	      packet->http_url_name.len);
+	flow->http.proxy[len-1] = '\0';
+      }
+    }
   }
 
   if(packet->server_line.ptr != NULL && (packet->server_line.len > 7)) {

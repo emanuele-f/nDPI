@@ -4276,6 +4276,9 @@ void ndpi_free_flow_data(struct ndpi_flow_struct* flow) {
     if(flow->http.user_agent)
       ndpi_free(flow->http.user_agent);
 
+    if(flow->http.proxy)
+      ndpi_free(flow->http.proxy);
+
     if(flow->kerberos_buf.pktbuf)
       ndpi_free(flow->kerberos_buf.pktbuf);
 
