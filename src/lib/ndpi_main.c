@@ -3688,6 +3688,10 @@ static int ndpi_init_packet_header(struct ndpi_detection_module_struct *ndpi_str
 	  ndpi_free(flow->http.url);
 	  flow->http.url = NULL;
 	}
+	if(flow->http.proxy) {
+	  ndpi_free(flow->http.proxy);
+	  flow->http.proxy = NULL;
+	}
 	if(flow->http.content_type) {
 	  ndpi_free(flow->http.content_type);
 	  flow->http.content_type = NULL;
@@ -6295,6 +6299,8 @@ void ndpi_free_flow(struct ndpi_flow_struct *flow) {
   if(flow) {
     if(flow->http.url)
       ndpi_free(flow->http.url);
+    if(flow->http.proxy)
+      ndpi_free(flow->http.proxy);
     if(flow->http.content_type)
       ndpi_free(flow->http.content_type);
     if(flow->http.user_agent)
