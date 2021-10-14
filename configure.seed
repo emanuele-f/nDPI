@@ -149,6 +149,7 @@ case "$host" in
          # and in the C library for *BSD systems
          AC_CHECK_LIB([dl], [dlopen, dlsym],   [DL_LIB="-ldl"],[AC_CHECK_LIB([c], [dlopen, dlsym], [DL_LIB="-lc"],[AC_MSG_ERROR([unable to find the dlopen(), dlsym() functions]) ]) ])
       else
+        if ! test "${with_only_libndpi+set}" = set; then :
          AC_CHECK_LIB([pcap], [pcap_open_live], [PCAP_LIB="-lpcap"])
 	 if test $ac_cv_lib_pcap_pcap_open_live = "no"; then :
             echo ""
@@ -156,6 +157,7 @@ case "$host" in
             echo "ERROR: Please install it and try again"
             exit
 	 fi
+	fi
       fi
       ;;
 esac
