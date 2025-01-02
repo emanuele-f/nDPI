@@ -68,8 +68,9 @@
 #include <sys/endian.h>
 #endif
 
-#include "ndpi_content_match.c.inc"
 #include "ndpi_dga_match.c.inc"
+#ifndef NDPI_SLIM
+#include "ndpi_content_match.c.inc"
 #include "inc_generated/ndpi_azure_match.c.inc"
 #include "inc_generated/ndpi_tor_match.c.inc"
 #include "inc_generated/ndpi_whatsapp_match.c.inc"
@@ -124,6 +125,7 @@
 #include "inc_generated/ndpi_asn_epicgames.c.inc"
 #include "inc_generated/ndpi_asn_nvidia.c.inc"
 #include "inc_generated/ndpi_asn_roblox.c.inc"
+#endif // NDPI_SLIM
 
 /* Third party libraries */
 #include "third_party/include/ndpi_patricia.h"
@@ -894,6 +896,8 @@ void ndpi_init_protocol_match(struct ndpi_detection_module_struct *ndpi_str,
 
 /* ******************************************************************** */
 
+#ifndef NDPI_SLIM
+
 /* Self check function to be called only for testing purposes */
 void ndpi_self_check_host_match(FILE *error_out) {
   u_int32_t i, j;
@@ -922,6 +926,8 @@ void ndpi_self_check_host_match(FILE *error_out) {
   }
 }
 
+#endif
+
 /* ******************************************************************** */
 
 #define XGRAMS_C 26
@@ -929,7 +935,6 @@ static int ndpi_xgrams_inited = 0;
 static unsigned int bigrams_bitmap[(XGRAMS_C*XGRAMS_C+31)/32];
 static unsigned int impossible_bigrams_bitmap[(XGRAMS_C*XGRAMS_C+31)/32];
 static unsigned int trigrams_bitmap[(XGRAMS_C*XGRAMS_C*XGRAMS_C+31)/32];
-
 
 static void ndpi_xgrams_init(struct ndpi_detection_module_struct *ndpi_str,
                              unsigned int *dst, size_t dn,
@@ -963,6 +968,7 @@ static void ndpi_xgrams_init(struct ndpi_detection_module_struct *ndpi_str,
 /* ******************************************************************** */
 
 static void init_string_based_protocols(struct ndpi_detection_module_struct *ndpi_str) {
+#ifndef NDPI_SLIM
   int i;
 
   for(i = 0; host_match[i].string_to_match != NULL; i++)
@@ -986,6 +992,7 @@ static void init_string_based_protocols(struct ndpi_detection_module_struct *ndp
   /* ************************ */
 
   //ndpi_enable_loaded_categories(ndpi_str);
+#endif
 
   if(!ndpi_xgrams_inited) {
     ndpi_xgrams_inited = 1;
@@ -2948,6 +2955,8 @@ int ndpi_load_ipv4_ptree(struct ndpi_detection_module_struct *ndpi_str,
 
 /* ******************************************* */
 
+#ifndef NDPI_SLIM
+
 static void ndpi_init_ptree_ipv4(ndpi_patricia_tree_t *ptree, ndpi_network host_list[]) {
   int i;
 
@@ -2989,6 +2998,8 @@ static void ndpi_init_ptree_ipv6(struct ndpi_detection_module_struct *ndpi_str,
     }
   }
 }
+
+#endif // NDPI_SLIM
 
 /* ******************************************* */
 
@@ -3420,8 +3431,10 @@ struct ndpi_detection_module_struct *ndpi_init_detection_module(struct ndpi_glob
     return NULL;
   }
 
+#ifndef NDPI_SLIM
   ndpi_init_ptree_ipv4(ndpi_str->protocols->v4, host_protocol_list);
   ndpi_init_ptree_ipv6(ndpi_str, ndpi_str->protocols->v6, host_protocol_list_6);
+#endif
 
   ndpi_str->ip_risk_mask = ndpi_ptree_create();
 
@@ -3555,6 +3568,7 @@ static void ndpi_add_domain_risk_exceptions(struct ndpi_detection_module_struct 
   for(i=0; domains[i] != NULL; i++)
     ndpi_add_host_risk_mask(ndpi_str, (char*)domains[i], mask);
 
+#ifndef NDPI_SLIM
   for(i=0; host_match[i].string_to_match != NULL; i++) {
     switch(host_match[i].protocol_category) {
     case NDPI_PROTOCOL_CATEGORY_CONNECTIVITY_CHECK:
@@ -3567,9 +3581,12 @@ static void ndpi_add_domain_risk_exceptions(struct ndpi_detection_module_struct 
       break;
     }
   }
+#endif
 }
 
 /* *********************************************** */
+
+#ifndef NDPI_SLIM
 
 static int is_ip_list_enabled(struct ndpi_detection_module_struct *ndpi_str, int protoId)
 {
@@ -3577,6 +3594,8 @@ static int is_ip_list_enabled(struct ndpi_detection_module_struct *ndpi_str, int
     return 0;
   return 1;
 }
+
+#endif
 
 /* *********************************************** */
 
@@ -3615,6 +3634,7 @@ int ndpi_finalize_initialization(struct ndpi_detection_module_struct *ndpi_str) 
     NDPI_LOG_DBG(ndpi_str, "Libgcrypt initialization skipped\n");
   }
 
+#ifndef NDPI_SLIM
   if(is_ip_list_enabled(ndpi_str, NDPI_PROTOCOL_AMAZON_AWS)) {
     ndpi_init_ptree_ipv4(ndpi_str->protocols->v4, ndpi_protocol_amazon_aws_protocol_list);
     ndpi_init_ptree_ipv6(ndpi_str, ndpi_str->protocols->v6, ndpi_protocol_amazon_aws_protocol_list_6);
@@ -3844,6 +3864,7 @@ int ndpi_finalize_initialization(struct ndpi_detection_module_struct *ndpi_str) 
       ndpi_init_ptree_ipv6(ndpi_str, ndpi_str->ip_risk->v6, ndpi_http_crawler_bot_hardcoded_protocol_list_6);
     }
   }
+#endif // NDPI_SLIM
 
   ndpi_add_domain_risk_exceptions(ndpi_str);
 
@@ -8221,16 +8242,20 @@ int ndpi_load_category(struct ndpi_detection_module_struct *ndpi_struct, const c
 /* ********************************************************************************* */
 
 int ndpi_enable_loaded_categories(struct ndpi_detection_module_struct *ndpi_str) {
+#ifndef NDPI_SLIM
   int i;
   static char *built_in = "built-in";
+#endif
 
   if(ndpi_str->custom_categories.categories_loaded)
     return(-1); /* Already loaded */
 
+#ifndef NDPI_SLIM
   /* First add the nDPI known categories matches */
   for(i = 0; category_match[i].string_to_match != NULL; i++)
     ndpi_load_category(ndpi_str, category_match[i].string_to_match,
 		       category_match[i].protocol_category, built_in);
+#endif
 
   ndpi_domain_classify_free(ndpi_str->custom_categories.sc_hostnames);
   ndpi_str->custom_categories.sc_hostnames        = ndpi_str->custom_categories.sc_hostnames_shadow;
@@ -10690,6 +10715,8 @@ void ndpi_sha256(const u_char *data, size_t data_len, u_int8_t sha_hash[32]) {
 
 /* ******************************************************************** */
 
+#ifndef NDPI_SLIM
+
 static int enough(int a, int b) {
   u_int8_t percentage = 20;
 
@@ -10700,6 +10727,8 @@ static int enough(int a, int b) {
 
   return(0);
 }
+
+#endif
 
 /* ******************************************************************** */
 
@@ -10719,6 +10748,8 @@ u_int8_t ends_with(struct ndpi_detection_module_struct *ndpi_struct,
 }
 
 /* ******************************************************************** */
+
+#ifndef NDPI_SLIM
 
 static int ndpi_is_trigram_char(char c) {
   if(ndpi_isdigit(c) || (c == '.') || (c == '-'))
@@ -10745,12 +10776,15 @@ static int ndpi_is_vowel(char c) {
   }
 }
 
+#endif // NDPI_SLIM
+
 /* ******************************************************************** */
 
 int ndpi_check_dga_name(struct ndpi_detection_module_struct *ndpi_str,
 			struct ndpi_flow_struct *flow,
 			char *name, u_int8_t is_hostname, u_int8_t check_subproto) {
 
+#ifndef NDPI_SLIM
   /* Get domain name if ndpi_load_domain_suffixes(..) has been called */
   name = (char*)ndpi_get_host_domain(ndpi_str, name);
 
@@ -11065,6 +11099,15 @@ int ndpi_check_dga_name(struct ndpi_detection_module_struct *ndpi_str,
 
     return(rc);
   }
+#else
+  (void) ndpi_str;
+  (void) flow;
+  (void) name;
+  (void) is_hostname;
+  (void) check_subproto;
+
+  return 0;
+#endif // NDPI_SLIM
 }
 
 /* ******************************************************************** */

@@ -8,6 +8,7 @@
 AR = @AR@
 CC = @CC@
 RANLIB = @RANLIB@
+NDPI_SLIM=@NDPI_SLIM@
 #
 # Installation directories
 #
@@ -29,7 +30,13 @@ CFLAGS_third_party/src/roaring.c := -Wno-unused-function -Wno-attributes
 LDFLAGS    += @NDPI_LDFLAGS@
 LIBS       = @ADDITIONAL_LIBS@ @LIBS@ @GPROF_LIBS@
 
-OBJECTS   = $(patsubst protocols/%.c, protocols/%.o, $(wildcard protocols/*.c)) $(patsubst third_party/src/%.c, third_party/src/%.o, $(wildcard third_party/src/*.c)) $(patsubst third_party/src/hll/%.c, third_party/src/hll/%.o, $(wildcard third_party/src/hll/*.c)) $(patsubst ./%.c, ./%.o, $(wildcard ./*.c))
+OBJECTS := $(patsubst protocols/%.c, protocols/%.o, $(wildcard protocols/*.c)) $(patsubst third_party/src/%.c, third_party/src/%.o, $(wildcard third_party/src/*.c)) $(patsubst third_party/src/hll/%.c, third_party/src/hll/%.o, $(wildcard third_party/src/hll/*.c)) $(patsubst ./%.c, ./%.o, $(wildcard ./*.c))
+
+ifeq ($(NDPI_SLIM),1)
+OBJECTS := $(filter-out third_party/src/libinjection_html5.o third_party/src/libinjection_xss.o third_party/src/libinjection_sqli.o, $(OBJECTS))
+OBJECTS := $(filter-out third_party/src/roaring.o third_party/src/roaring_v2.o ./ndpi_bitmap.o ./ndpi_bitmap64_fuse.o ./ndpi_binary_bitmap.o ./ndpi_filter.o, $(OBJECTS))
+endif
+
 HEADERS   = $(wildcard ../include/*.h) $(wildcard *.h)
 NDPI_VERSION_MAJOR   = @NDPI_MAJOR@
 NDPI_LIB_STATIC      = libndpi.a
