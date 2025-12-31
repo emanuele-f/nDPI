@@ -1013,7 +1013,7 @@ static void ndpi_validate_protocol_initialization(struct ndpi_detection_module_s
 
   for(i = 0; i < ndpi_str->ndpi_num_supported_protocols; i++) {
     if(ndpi_str->proto_defaults[i].protoName == NULL) {
-      NDPI_LOG_ERR(ndpi_str,
+      NDPI_LOG_DBG(ndpi_str,
 		   "[NDPI] INTERNAL ERROR missing protoName initialization for [protoId=%d]: recovering\n", i);
     } else {
       if((i != NDPI_PROTOCOL_UNKNOWN) &&
