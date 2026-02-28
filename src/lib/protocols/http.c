@@ -1070,12 +1070,16 @@ static void check_content_type_and_change_protocol(struct ndpi_detection_module_
        && (packet->host_line.len < 21))
       ndpi_check_numeric_ip(ndpi_struct, flow, (char*)packet->host_line.ptr, packet->host_line.len);
 
+    flow->http.method = ndpi_http_str2method((const char*)packet->http_method.ptr,
+					     (u_int16_t)packet->http_method.len);
+
     flow->http.url = ndpi_malloc(len);
 
     if(flow->http.url) {
       u_int offset = 0, host_end = 0;
 
-      if(flow->detected_protocol_stack[0] == NDPI_PROTOCOL_HTTP_CONNECT) {
+      if((flow->detected_protocol_stack[0] == NDPI_PROTOCOL_HTTP_CONNECT)
+	|| (flow->http.method == NDPI_HTTP_METHOD_CONNECT)) {
 	strncpy(flow->http.url, (char*)packet->http_url_name.ptr,
 		packet->http_url_name.len);
 
