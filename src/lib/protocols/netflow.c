@@ -110,7 +110,7 @@ static void ndpi_search_netflow(struct ndpi_detection_module_struct *ndpi_struct
 
   if((packet->udp != NULL) && (payload_len >= 24)) {
     u_int16_t version = (packet->payload[0] << 8) + packet->payload[1], uptime_offset;
-    u_int32_t when, *_when;
+    u_int32_t when;
     u_int16_t n = (packet->payload[2] << 8) + packet->payload[3], expected_len = 0;
 
     switch(version) {
@@ -166,8 +166,7 @@ static void ndpi_search_netflow(struct ndpi_detection_module_struct *ndpi_struct
       return;
     }
 
-    _when = (u_int32_t*)&packet->payload[uptime_offset]; /* Sysuptime */
-    when = ntohl(*_when);
+    when = ntohl(get_u_int32_t(packet->payload, uptime_offset)); /* Sysuptime */
 
     do_gettimeofday(&now_tv);
     now = now_tv.tv_sec;

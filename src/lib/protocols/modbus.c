@@ -43,7 +43,7 @@ static void ndpi_search_modbus_tcp(struct ndpi_detection_module_struct *ndpi_str
     if((packet->payload_packet_len >= 8) 
        &&((packet->tcp->dest == modbus_port) || (packet->tcp->source == modbus_port))) {
       // Modbus uses the port 502		
-      u_int16_t modbus_len = htons(*((u_int16_t*)&packet->payload[4]));
+      u_int16_t modbus_len = htons(get_u_int16_t(packet->payload, 4));
 
       // the fourth parameter of the payload is the length of the segment            
       if(((modbus_len-1) == (packet->payload_packet_len - 7 /* ModbusTCP header len */))

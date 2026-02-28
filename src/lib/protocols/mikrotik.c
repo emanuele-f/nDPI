@@ -69,7 +69,7 @@ static void ndpi_search_mikrotik(struct ndpi_detection_module_struct *ndpi_struc
 	    break;
 	  case 10: /* Uptime */
 	    if(m_len == 4)
-	      flow->protos.mikrotik.uptime = ntohl(*((u_int32_t*)&payload[offset+4]));
+	      flow->protos.mikrotik.uptime = ntohl(get_u_int32_t(payload, offset+4));
 	    break;
 	  case 11: /* Software-ID */
 	    snprintf(flow->protos.mikrotik.sw_id, sizeof(flow->protos.mikrotik.sw_id), 
@@ -89,7 +89,7 @@ static void ndpi_search_mikrotik(struct ndpi_detection_module_struct *ndpi_struc
 	    break;
 	  case 14: /* IPv4 */
 	    if(m_len == 4)
-	      flow->protos.mikrotik.ipv4_addr = ntohl(*((u_int32_t*)&payload[offset+4]));
+	      flow->protos.mikrotik.ipv4_addr = ntohl(get_u_int32_t(payload, offset+4));
 	    break;
 	  }
       

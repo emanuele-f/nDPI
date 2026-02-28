@@ -53,7 +53,7 @@ static void search_blizzard_tcp(struct ndpi_detection_module_struct* ndpi_struct
 
   /* Pattern found on Hearthstone */
   if(packet->payload_packet_len >= 8 &&
-     le32toh(*(uint32_t *)&packet->payload[4]) == (u_int32_t)(packet->payload_packet_len - 8)) {
+     le32toh(get_u_int32_t(packet->payload, 4)) == (u_int32_t)(packet->payload_packet_len - 8)) {
     NDPI_LOG_INFO(ndpi_struct, "Found Blizzard (Hearthstone)\n");
     ndpi_set_detected_protocol(ndpi_struct, flow, NDPI_PROTOCOL_BLIZZARD, NDPI_PROTOCOL_UNKNOWN, NDPI_CONFIDENCE_DPI);
     return;
@@ -95,7 +95,7 @@ static void search_blizzard_udp(struct ndpi_detection_module_struct* ndpi_struct
   /* The last bytes are some kind of sequence number, always starting from 1 */
   if(/* First pkt send by the client */
      (packet->payload_packet_len == 18 &&
-      le32toh(*(uint32_t *)&packet->payload[14]) == 1) ||
+      le32toh(get_u_int32_t(packet->payload, 14)) == 1) ||
      /* First pkt send by the server */
      (packet->payload_packet_len == 15 &&
       packet->payload[14] == 1)) {
@@ -115,15 +115,15 @@ static void search_blizzard_udp(struct ndpi_detection_module_struct* ndpi_struct
   /* Some kind of ping */
   if(flow->guessed_protocol_id_by_ip == NDPI_PROTOCOL_BLIZZARD &&
      packet->payload_packet_len == 40 &&
-     *(uint32_t *)&packet->payload[17] == 0 /* Seq number starting from 0 */) {
+     get_u_int32_t(packet->payload, 17) == 0 /* Seq number starting from 0 */) {
     NDPI_LOG_INFO(ndpi_struct, "Found Blizzard (overwatch2; pattern 1)\n");
     ndpi_set_detected_protocol(ndpi_struct, flow, NDPI_PROTOCOL_BLIZZARD, NDPI_PROTOCOL_UNKNOWN, NDPI_CONFIDENCE_DPI);
     return;
   }
   if(flow->guessed_protocol_id_by_ip == NDPI_PROTOCOL_BLIZZARD &&
      packet->payload_packet_len == 50 &&
-     ((*(uint64_t *)&packet->payload[32] == 0 && *(uint64_t *)&packet->payload[40] == 0) /* First pkt from client */ ||
-      (*(uint64_t *)&packet->payload[0] == 0 && *(uint64_t *)&packet->payload[8] == 0)) /* First pkt from server */) {
+     ((get_u_int64_t(packet->payload, 32) == 0 && get_u_int64_t(packet->payload, 40) == 0) /* First pkt from client */ ||
+      (get_u_int64_t(packet->payload, 0) == 0 && get_u_int64_t(packet->payload, 8) == 0)) /* First pkt from server */) {
     NDPI_LOG_INFO(ndpi_struct, "Found Blizzard (overwatch2; pattern 2)\n");
     ndpi_set_detected_protocol(ndpi_struct, flow, NDPI_PROTOCOL_BLIZZARD, NDPI_PROTOCOL_UNKNOWN, NDPI_CONFIDENCE_DPI);
     return;

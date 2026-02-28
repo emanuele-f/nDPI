@@ -3829,8 +3829,12 @@ u_int8_t ndpi_check_flow_risk_exceptions(struct ndpi_detection_module_struct *nd
       break;
 
     case NDPI_PARAM_HOST_IPV4:
-      if(ndpi_check_ipv4_exception(ndpi_str, NULL, *((u_int32_t*)params[i].value)))
-	return(1);
+      {
+	u_int32_t ipv4_val;
+	memcpy(&ipv4_val, params[i].value, sizeof(ipv4_val));
+	if(ndpi_check_ipv4_exception(ndpi_str, NULL, ipv4_val))
+	  return(1);
+      }
       break;
 
     default:

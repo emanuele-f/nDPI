@@ -39,7 +39,7 @@ static void ndpi_search_bitcoin(struct ndpi_detection_module_struct *ndpi_struct
   if(packet->payload_packet_len >= 4) {
     if(packet->tcp->source == htons(8333) ||
       packet->tcp->dest == htons(8333)) {
-      u_int32_t ntoh_to_match = ntohl(*(u_int32_t*)packet->payload);  
+      u_int32_t ntoh_to_match = ntohl(get_u_int32_t(packet->payload, 0));
       switch (ntoh_to_match) {
         case MAIN_NET_MAGIC:
         case TEST_NET_MAGIC:

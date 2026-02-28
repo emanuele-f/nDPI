@@ -89,7 +89,7 @@ static int is_opcode_valid(u_int8_t opcode)
 }
 
 static u_int32_t get_packet_id(const u_int8_t * payload, u_int8_t hms) {
-  return(ntohl(*(u_int32_t*)(payload + P_HARD_RESET_PACKET_ID_OFFSET(hms))));
+  return(ntohl(get_u_int32_t(payload, P_HARD_RESET_PACKET_ID_OFFSET(hms))));
 }
 
 /* From wireshark */
@@ -127,7 +127,7 @@ static int8_t detect_hmac_size(const u_int8_t *payload, int payload_len) {
   /* Heuristic from Wireshark, to detect no-HMAC flows (i.e. tls-crypt) */
   if(payload_len >= 14 &&
      !(payload[9] > 0 &&
-       check_for_valid_hmac(ntohl(*(u_int32_t*)(payload + 9)))))
+       check_for_valid_hmac(ntohl(get_u_int32_t(payload, 9)))))
     return P_HMAC_NONE;
 
   return(-1);
@@ -189,7 +189,7 @@ static int search_standard(struct ndpi_detection_module_struct* ndpi_struct,
   }
   if(flow->packet_direction_counter[dir] == 1 &&
      packet->tcp &&
-     ntohs(*(u_int16_t *)(packet->payload)) != ovpn_payload_len) {
+     ntohs(get_u_int16_t(packet->payload, 0)) != ovpn_payload_len) {
     NDPI_LOG_DBG2(ndpi_struct, "Invalid tcp len on reset\n");
     return 1; /* Exclude */
   }
@@ -219,7 +219,7 @@ static int search_standard(struct ndpi_detection_module_struct* ndpi_struct,
   } else {
     memcpy(flow->ovpn_session_id[dir], ovpn_payload + 1, 8);
     NDPI_LOG_DBG2(ndpi_struct, "Session key [%d]: 0x%lx\n", dir,
-                  ndpi_ntohll(*(u_int64_t *)flow->ovpn_session_id[dir]));
+                  ndpi_ntohll(get_u_int64_t(flow->ovpn_session_id[dir], 0)));
   }
 
   /* (1) */
@@ -246,7 +246,7 @@ static int search_standard(struct ndpi_detection_module_struct* ndpi_struct,
             NDPI_LOG_INFO(ndpi_struct,"found openvpn\n");
             return 2; /* Found */
           } else {
-            NDPI_LOG_DBG2(ndpi_struct, "key mismatch 0x%lx\n", ndpi_ntohll(*(u_int64_t *)session_remote));
+            NDPI_LOG_DBG2(ndpi_struct, "key mismatch 0x%lx\n", ndpi_ntohll(get_u_int64_t(session_remote, 0)));
           }
         }
         failed = 1;
@@ -417,7 +417,7 @@ static int search_heur_opcode(struct ndpi_detection_module_struct* ndpi_struct,
 #endif
     rc = 1; /* Exclude */
     while(offset + 2 + 1 /* The first byte is the opcode */ <= ovpn_payload_len) {
-      pdu_len = ntohs((*(u_int16_t *)(ovpn_payload + offset)));
+      pdu_len = ntohs(get_u_int16_t(ovpn_payload, offset));
       NDPI_LOG_DBG2(ndpi_struct, "Heur-opcode: TCP, iter %d offset %d pdu_length %d\n",
                       iter, offset, pdu_len);
       if(pdu_len < 14)
@@ -459,7 +459,7 @@ static void ndpi_search_openvpn(struct ndpi_detection_module_struct* ndpi_struct
   NDPI_LOG_DBG(ndpi_struct, "Search opnvpn\n");
 
   if(packet->payload_packet_len > 10 &&
-     ntohl(*(u_int32_t *)&packet->payload[4 + 2 * (packet->tcp != NULL)]) == 0x2112A442) {
+     ntohl(get_u_int32_t(packet->payload, 4 + 2 * (packet->tcp != NULL))) == 0x2112A442) {
     NDPI_LOG_DBG2(ndpi_struct, "Avoid collision with STUN\n");
     NDPI_EXCLUDE_DISSECTOR(ndpi_struct, flow);
     return;

@@ -2091,7 +2091,11 @@ void ndpi_popcount_count(struct ndpi_popcount *h, const u_int8_t *buf, u_int32_t
   /* Trivial alg. TODO: there are lots of better, more performant algorithms */
 
   for(i = 0; i < buf_len / 4; i++)
-    h->pop_count += __builtin_popcount(*(u_int32_t *)(buf + i * 4));
+    {
+      u_int32_t tmp;
+      memcpy(&tmp, buf + i * 4, sizeof(tmp));
+      h->pop_count += __builtin_popcount(tmp);
+    }
   for(i = 0; i < buf_len % 4; i++)
     h->pop_count += __builtin_popcount(buf[buf_len - (buf_len % 4) + i]);
 

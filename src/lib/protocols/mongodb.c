@@ -107,7 +107,7 @@ static void ndpi_check_mongodb(struct ndpi_detection_module_struct *ndpi_struct,
        }
     */
     if(packet->payload_packet_len > sizeof(mongodb_hdr) + 20) {
-      responseFlags = le32toh(*(uint32_t *)(packet->payload + sizeof(mongodb_hdr)));
+      responseFlags = le32toh(get_u_int32_t(packet->payload, sizeof(mongodb_hdr)));
       if((responseFlags & 0xFFFFFFF0) == 0)
         set_mongodb_detected(ndpi_struct, flow);
     }

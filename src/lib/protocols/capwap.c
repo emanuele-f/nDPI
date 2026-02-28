@@ -87,7 +87,7 @@ static void ndpi_search_setup_capwap(struct ndpi_detection_module_struct *ndpi_s
       offset = 15, to_add = 17;
 
     if (packet->payload_packet_len >= offset + sizeof(u_int16_t)) {
-      msg_len = ntohs(*(u_int16_t*)&packet->payload[offset]);
+      msg_len = ntohs(get_u_int16_t(packet->payload, offset));
 
       if((msg_len+to_add) == packet->payload_packet_len)
         goto capwap_found;
@@ -105,7 +105,7 @@ static void ndpi_search_setup_capwap(struct ndpi_detection_module_struct *ndpi_s
     if((sport == NDPI_CAPWAP_DATA_PORT) && (is_80211_data == 2 /* IEEE 802.11 Data */))
       goto capwap_found;
     else if(dport == NDPI_CAPWAP_DATA_PORT) {
-      u_int16_t msg_len = ntohs(*(u_int16_t*)&packet->payload[13]);
+      u_int16_t msg_len = ntohs(get_u_int16_t(packet->payload, 13));
       
       if((packet->payload[8] == 1 /* Mac len */)
 	 || (packet->payload[8] == 6 /* Mac len */)

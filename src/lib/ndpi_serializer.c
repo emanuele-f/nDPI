@@ -542,14 +542,16 @@ static inline void ndpi_deserialize_single_uint8(ndpi_private_deserializer *dese
 
 static inline void ndpi_deserialize_single_uint16(ndpi_private_deserializer *deserializer,
 						  u_int32_t offset, u_int16_t *s) {
-  *s = ntohs(*((u_int16_t *) &deserializer->buffer.data[offset]));
+  memcpy(s, &deserializer->buffer.data[offset], sizeof(*s));
+  *s = ntohs(*s);
 }
 
 /* ********************************** */
 
 static inline void ndpi_deserialize_single_uint32(ndpi_private_deserializer *deserializer,
 						  u_int32_t offset, u_int32_t *s) {
-  *s = ntohl(*((u_int32_t *) &deserializer->buffer.data[offset]));
+  memcpy(s, &deserializer->buffer.data[offset], sizeof(*s));
+  *s = ntohl(*s);
 }
 
 /* ********************************** */
@@ -563,21 +565,24 @@ static inline void ndpi_deserialize_single_int8(ndpi_private_deserializer *deser
 
 static inline void ndpi_deserialize_single_int16(ndpi_private_deserializer *deserializer,
 						 u_int32_t offset, int16_t *s) {
-  *s = ntohs(*((int16_t *) &deserializer->buffer.data[offset]));
+  memcpy(s, &deserializer->buffer.data[offset], sizeof(*s));
+  *s = ntohs(*s);
 }
 
 /* ********************************** */
 
 static inline void ndpi_deserialize_single_int32(ndpi_private_deserializer *deserializer,
 						 u_int32_t offset, int32_t *s) {
-  *s = ntohl(*((int32_t *) &deserializer->buffer.data[offset]));
+  memcpy(s, &deserializer->buffer.data[offset], sizeof(*s));
+  *s = ntohl(*s);
 }
 
 /* ********************************** */
 
 static inline void ndpi_deserialize_single_uint64(ndpi_private_deserializer *deserializer,
 						  u_int32_t offset, u_int64_t *s) {
-  *s = ndpi_ntohll(*(u_int64_t*)&deserializer->buffer.data[offset]);
+  memcpy(s, &deserializer->buffer.data[offset], sizeof(*s));
+  *s = ndpi_ntohll(*s);
 }
 
 /* ********************************** */
@@ -607,7 +612,8 @@ static inline void ndpi_deserialize_single_double(ndpi_private_deserializer *des
 
 static inline void ndpi_deserialize_single_string(ndpi_private_deserializer *deserializer,
 						  u_int32_t offset, ndpi_string *v) {
-  v->str_len = ntohs(*((u_int16_t *) &deserializer->buffer.data[offset]));
+  memcpy(&v->str_len, &deserializer->buffer.data[offset], sizeof(v->str_len));
+  v->str_len = ntohs(v->str_len);
   v->str = (char *) &deserializer->buffer.data[offset + sizeof(u_int16_t)];
 }
 
@@ -2565,7 +2571,8 @@ static inline int ndpi_deserialize_get_single_string_size(ndpi_private_deseriali
   expected = sizeof(u_int16_t) /* len */;
   if(buff_diff < expected) return(-2);
 
-  str_len = ntohs(*((u_int16_t *) &deserializer->buffer.data[offset]));
+  memcpy(&str_len, &deserializer->buffer.data[offset], sizeof(str_len));
+  str_len = ntohs(str_len);
 
   expected += str_len;
   if(buff_diff < expected) return(-2);

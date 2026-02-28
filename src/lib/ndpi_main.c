@@ -7646,7 +7646,7 @@ int ndpi_handle_ipv6_extension_headers(u_int16_t l3len, const u_int8_t **l4ptr,
       l3len -= 5;
 
       *nxt_hdr = (*l4ptr)[0];
-      frag_offset = ntohs(*(u_int16_t *)((*l4ptr) + 2)) >> 3;
+      frag_offset = ntohs(get_u_int16_t(*l4ptr, 2)) >> 3;
       // Handle ipv6 fragments as the ipv4 ones: keep the first fragment, drop the others
       if(frag_offset != 0)
 	return(1);
@@ -8065,7 +8065,7 @@ static int ndpi_init_packet(struct ndpi_detection_module_struct *ndpi_str,
       if(ndpi_str->cfg.tcp_fingerprint_enabled &&
          flow->tcp.fingerprint == NULL) {
 	u_int8_t *t = (u_int8_t*)packet->tcp;
-	u_int16_t flags = ntohs(*((u_int16_t*)&t[12])) & 0xFFF;
+	u_int16_t flags = ntohs(get_u_int16_t(t, 12)) & 0xFFF;
 	u_int16_t syn_mask = TH_SYN | TH_ECE | TH_CWR;
 
 	if((flags & syn_mask) && ((flags & TH_ACK) == 0)) {
@@ -8318,7 +8318,7 @@ static u_int8_t ndpi_is_multi_or_broadcast(struct ndpi_flow_struct *flow) {
   } else {
     /* IPv6 */
 
-    if((ntohl((*(u_int32_t *)&flow->s_address.v6)) & 0xFF000000) == 0xFF000000)
+    if((ntohl(get_u_int32_t((const uint8_t *)flow->s_address.v6, 0)) & 0xFF000000) == 0xFF000000)
       return(1);
   }
 
@@ -8819,11 +8819,11 @@ u_int16_t ndpi_guess_host_protocol_id(struct ndpi_detection_module_struct *ndpi_
   } else {
     struct in6_addr addr;
 
-    addr = *(struct in6_addr *)&flow->s_address.v6;
+    memcpy(&addr, flow->s_address.v6, sizeof(addr));
     ret = ndpi_network_port_ptree6_match(ndpi_str, &addr, flow->s_port);
 
     if(ret == NDPI_PROTOCOL_UNKNOWN && use_client) {
-      addr = *(struct in6_addr *)&flow->c_address.v6;
+      memcpy(&addr, flow->c_address.v6, sizeof(addr));
       ret = ndpi_network_port_ptree6_match(ndpi_str, &addr, flow->c_port);
     }
   }
@@ -10496,7 +10496,7 @@ ret_protocols:
               packet->iphv6) { /* TODO: some checks on "local" addresses? */
       struct in6_addr addr;
 
-      addr = *(struct in6_addr *)&flow->c_address.v6;
+      memcpy(&addr, flow->c_address.v6, sizeof(addr));
       net_risk = ndpi_network_risk_ptree_match6(ndpi_str, &addr);
     }
 

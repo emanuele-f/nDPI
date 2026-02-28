@@ -150,7 +150,7 @@ static int slp_dissect_url_entries(struct ndpi_detection_module_struct *ndpi_str
   if (packet->payload_packet_len <= url_entries_offset + sizeof(uint16_t)) {
     return 1;
   }
-  url_entries_count = ntohs(*(uint16_t *)&packet->payload[url_entries_offset]);
+  url_entries_count = ntohs(get_u_int16_t(packet->payload, url_entries_offset));
   url_entries_offset += sizeof(uint16_t);
 
   for (i = 0; i < ndpi_min(url_entries_count, NDPI_ARRAY_LENGTH(flow->protos.slp.url)); ++i) {
@@ -179,7 +179,7 @@ static int slp_dissect_url_entries(struct ndpi_detection_module_struct *ndpi_str
       if (packet->payload_packet_len <= auth_block_offset + 2) {
         return 1;
       }
-      uint16_t auth_block_length = ntohs(*(uint16_t *)&packet->payload[auth_block_offset]);
+      uint16_t auth_block_length = ntohs(get_u_int16_t(packet->payload, auth_block_offset));
       if (packet->payload_packet_len < auth_block_offset + auth_block_length) {
         return 1;
       }
@@ -276,7 +276,7 @@ static void ndpi_dissect_slp_v2(struct ndpi_detection_module_struct *ndpi_struct
 
     if (url_length_offset > 0 && packet->payload_packet_len > sizeof(*hdr) + url_length_offset + 2) {
       // <URL String>
-      url_length_or_count = ntohs(*(uint16_t *)&packet->payload[sizeof(*hdr) + url_length_offset]);
+      url_length_or_count = ntohs(get_u_int16_t(packet->payload, sizeof(*hdr) + url_length_offset));
       if (packet->payload_packet_len > sizeof(*hdr) + url_offset + 2 + url_length_or_count) {
         size_t len = ndpi_min(sizeof(flow->protos.slp.url[0]) - 1, url_length_or_count);
         flow->protos.slp.url_count = 1;
@@ -288,7 +288,7 @@ static void ndpi_dissect_slp_v2(struct ndpi_detection_module_struct *ndpi_struct
         ndpi_set_risk(ndpi_struct, flow, NDPI_MALFORMED_PACKET, "Invalid URL entries");
       }
     } else if (packet->payload_packet_len > sizeof(*hdr) + url_offset + 2) {
-      url_length_or_count = ntohs(*(uint16_t *)&packet->payload[sizeof(*hdr) + url_offset]); // FID_SrvReg or FID_SrvDeReg
+      url_length_or_count = ntohs(get_u_int16_t(packet->payload, sizeof(*hdr) + url_offset)); // FID_SrvReg or FID_SrvDeReg
       if (packet->payload_packet_len > sizeof(*hdr) + url_offset + 2 + url_length_or_count) {
         size_t len = ndpi_min(sizeof(flow->protos.slp.url[0]) - 1, url_length_or_count);
         flow->protos.slp.url_count = 1;

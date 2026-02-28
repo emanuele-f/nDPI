@@ -209,7 +209,7 @@ static void parse_ip_port_attribute(const u_int8_t *payload, u_int16_t payload_l
 
     if(protocol_family == 0x01 /* IPv4 */ &&
        real_len == 8) {
-      u_int16_t port = ntohs(*((u_int16_t*)&payload[off+6]));
+      u_int16_t port = ntohs(get_u_int16_t(payload, off+6));
       u_int32_t ip   = ntohl(get_u_int32_t(payload, off+8));
 
       /* Only the first attribute ever in the flow */
@@ -226,7 +226,7 @@ static void parse_ip_port_attribute(const u_int8_t *payload, u_int16_t payload_l
       }
     } else if(protocol_family == 0x02 /* IPv6 */ &&
               real_len == 20) {
-      u_int16_t port = ntohs(*((u_int16_t*)&payload[off+6]));
+      u_int16_t port = ntohs(get_u_int16_t(payload, off+6));
       u_int32_t ip[4];
 
       ip[0] = get_u_int32_t(payload, off + 8);
@@ -273,7 +273,7 @@ static void parse_xor_ip_port_attribute(struct ndpi_detection_module_struct *ndp
       u_int32_t ip;
       u_int16_t port;
 
-      port = ntohs(*((u_int16_t *)&payload[off + 6])) ^ (magic_cookie >> 16);
+      port = ntohs(get_u_int16_t(payload, off + 6)) ^ (magic_cookie >> 16);
       ip = get_u_int32_t(payload, off + 8) ^ htonl(magic_cookie);
 
       /* Only the first attribute ever in the flow */
@@ -311,7 +311,7 @@ static void parse_xor_ip_port_attribute(struct ndpi_detection_module_struct *ndp
       u_int32_t ip[4];
       u_int16_t port;
 
-      port = ntohs(*((u_int16_t *)&payload[off + 6])) ^ (magic_cookie >> 16);
+      port = ntohs(get_u_int16_t(payload, off + 6)) ^ (magic_cookie >> 16);
       ip[0] = get_u_int32_t(payload, off + 8) ^ htonl(magic_cookie);
       ip[1] = get_u_int32_t(payload, off + 12) ^ htonl(transaction_id[0]);
       ip[2] = get_u_int32_t(payload, off + 16) ^ htonl(transaction_id[1]);
@@ -396,8 +396,8 @@ int is_stun(struct ndpi_detection_module_struct *ndpi_struct,
     payload_length -= 12;
   }
 
-  msg_type = ntohs(*((u_int16_t *)&payload[0]));
-  msg_len = ntohs(*((u_int16_t *)&payload[2]));
+  msg_type = ntohs(get_u_int16_t(payload, 0));
+  msg_len = ntohs(get_u_int16_t(payload, 2));
   magic_cookie = ntohl(get_u_int32_t(payload, 4));
   transaction_id[0] = ntohl(get_u_int32_t(payload, 8));
   transaction_id[1] = ntohl(get_u_int32_t(payload, 12));
@@ -450,7 +450,7 @@ int is_stun(struct ndpi_detection_module_struct *ndpi_struct,
 
     off = STUN_HDR_LEN;
     while(off + 4 < payload_length) {
-      u_int16_t len = ntohs(*((u_int16_t *)&payload[off + 2]));
+      u_int16_t len = ntohs(get_u_int16_t(payload, off + 2));
       u_int16_t real_len = (len + 3) & 0xFFFFFFFC;
 
       off += 4 + real_len;
@@ -503,8 +503,8 @@ int is_stun(struct ndpi_detection_module_struct *ndpi_struct,
 
   off = STUN_HDR_LEN;
   while(off + 4 < payload_length) {
-    u_int16_t attribute = ntohs(*((u_int16_t *)&payload[off]));
-    u_int16_t len = ntohs(*((u_int16_t *)&payload[off + 2]));
+    u_int16_t attribute = ntohs(get_u_int16_t(payload, off));
+    u_int16_t len = ntohs(get_u_int16_t(payload, off + 2));
     u_int16_t real_len = (len + 3) & 0xFFFFFFFC;
 
     NDPI_LOG_DBG(ndpi_struct, "Attribute 0x%x (%d/%d)\n", attribute, len, real_len);
@@ -828,7 +828,7 @@ static int stun_search_again(struct ndpi_detection_module_struct *ndpi_struct,
     return keep_extra_dissection(ndpi_struct, flow);
 
   first_byte = packet->payload[0];
-  msg_type = ntohs(*((u_int16_t *)&packet->payload[0]));
+  msg_type = ntohs(get_u_int16_t(packet->payload, 0));
 
   /* RFC9443 */
   if(first_byte <= 3 ||
@@ -940,7 +940,7 @@ static int stun_search_again(struct ndpi_detection_module_struct *ndpi_struct,
       if(packet->payload_packet_len >= 4) {
         u_int16_t ch_len;
 
-        ch_len = ntohs(*(u_int16_t *)&packet->payload[2]);
+        ch_len = ntohs(get_u_int16_t(packet->payload, 2));
 
         if(ch_len <= packet->payload_packet_len - 4) {
           const u_int8_t *orig_payload;
@@ -1097,7 +1097,7 @@ static int stun_telegram_search_again(struct ndpi_detection_module_struct *ndpi_
 
   /* It should be STUN/DTLS/RTP */
 
-  length = ntohs(*(u_int16_t *)&packet->payload[22]);
+  length = ntohs(get_u_int16_t(packet->payload, 22));
   if(24 + length > packet->payload_packet_len) {
     NDPI_LOG_DBG(ndpi_struct, "Malformed custom Telegram packet (too long: %d %d)\n",
                  length, packet->payload_packet_len);

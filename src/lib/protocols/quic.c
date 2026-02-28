@@ -250,10 +250,10 @@ int quic_len(const uint8_t *buf, uint64_t *value)
     (*value) &= 0x3F;
     return 1;
   case 1:
-    *value = ntohs(*(uint16_t *)buf) & 0x3FFF;
+    *value = ntohs(get_u_int16_t(buf, 0)) & 0x3FFF;
     return 2;
   case 2:
-    *value = ntohl(*(uint32_t *)buf) & 0x3FFFFFFF;
+    *value = ntohl(get_u_int32_t(buf, 0)) & 0x3FFFFFFF;
     return 4;
   case 3:
     *value = ndpi_ntohll(get_u_int64_t(buf, 0)) & 0x3FFFFFFFFFFFFFFF;
@@ -282,8 +282,8 @@ int quic_len_buffer_still_required(uint8_t value)
 static uint16_t gquic_get_u16(const uint8_t *buf, uint32_t version)
 {
   if(version >= V_Q039)
-    return ntohs(*(uint16_t *)buf);
-  return le16toh(*(uint16_t *)buf);
+    return ntohs(get_u_int16_t(buf, 0));
+  return le16toh(get_u_int16_t(buf, 0));
 }
 
 
@@ -1431,7 +1431,7 @@ void process_chlo(struct ndpi_detection_module_struct *ndpi_struct,
     NDPI_LOG_DBG(ndpi_struct, "Unexpected handshake message");
     return;
   }
-  num_tags = le16toh(*(uint16_t *)&crypto_data[4]);
+  num_tags = le16toh(get_u_int16_t(crypto_data, 4));
 
   tag_offset_start = 8 + 8 * num_tags;
   prev_offset = 0;
@@ -1439,7 +1439,7 @@ void process_chlo(struct ndpi_detection_module_struct *ndpi_struct,
     if(8 + 8 * i + 8 >= crypto_data_len)
       break;
     tag = &crypto_data[8 + 8 * i];
-    offset = le32toh(*((u_int32_t *)&crypto_data[8 + 8 * i + 4]));
+    offset = le32toh(get_u_int32_t(crypto_data, 8 + 8 * i + 4));
     if(prev_offset > offset)
       break;
     len = offset - prev_offset;
@@ -1489,7 +1489,7 @@ void process_chlo(struct ndpi_detection_module_struct *ndpi_struct,
     if(memcmp(tag, "ICSL", 4) == 0 && len >= 4) {
       u_int icsl_offset = tag_offset_start + prev_offset;
 
-      flow->protos.tls_quic.quic_idle_timeout_sec = le32toh((*(uint32_t *)&crypto_data[icsl_offset]));
+      flow->protos.tls_quic.quic_idle_timeout_sec = le32toh(get_u_int32_t(crypto_data, icsl_offset));
       NDPI_LOG_DBG2(ndpi_struct, "ICSL: %d\n", flow->protos.tls_quic.quic_idle_timeout_sec);
       icsl_found = 1;
 
@@ -1597,7 +1597,7 @@ static int may_be_0rtt(struct ndpi_detection_module_struct *ndpi_struct,
   pub_bit3 = ((first_byte & 0x20) != 0);
   pub_bit4 = ((first_byte & 0x10) != 0);
 
-  *version = ntohl(*((u_int32_t *)&packet->payload[1]));
+  *version = ntohl(get_u_int32_t(packet->payload, 1));
 
   /* IETF versions, Long header, fixed bit (ignore QUIC-bit-greased case), 0RTT */
 
@@ -1664,12 +1664,12 @@ static int may_be_initial_pkt(struct ndpi_detection_module_struct *ndpi_struct,
 
   *version = 0;
   if(pub_bit1) {
-    *version = ntohl(*((u_int32_t *)&packet->payload[1]));
+    *version = ntohl(get_u_int32_t(packet->payload, 1));
   } else if(pub_bit5 && !pub_bit2) {
     if(!pub_bit8) {
       NDPI_LOG_DBG2(ndpi_struct, "Packet without version\n")
 	} else {
-      *version = ntohl(*((u_int32_t *)&packet->payload[9]));
+      *version = ntohl(get_u_int32_t(packet->payload, 9));
     }
   }
   if(!is_version_valid(*version)) {
@@ -1856,7 +1856,7 @@ static int is_vn(struct ndpi_detection_module_struct *ndpi_struct)
     return 0;
   }
 
-  version = ntohl(*((u_int32_t *)&packet->payload[1]));
+  version = ntohl(get_u_int32_t(packet->payload, 1));
   if(version != 0) {
     NDPI_LOG_DBG2(ndpi_struct, "Invalid version 0x%x\n", version);
     return 0;

@@ -213,7 +213,7 @@ static void ndpi_search_zoom(struct ndpi_detection_module_struct *ndpi_struct,
     }
   } else if(packet->payload_packet_len > 36 &&
             memcmp(packet->payload, tomatch_p2p, 3) == 0 &&
-            *(u_int32_t *)&packet->payload[packet->payload_packet_len - 4] == 0) {
+            get_u_int32_t(packet->payload, packet->payload_packet_len - 4) == 0) {
     u_int64_t ip_len, uuid_len;
 
     /* Check if it is a Peer-To-Peer call.
@@ -228,10 +228,10 @@ static void ndpi_search_zoom(struct ndpi_detection_module_struct *ndpi_struct,
        * 4 bytes as 0x00 at the end
     */
 
-    ip_len = ntohl(*(u_int32_t *)&packet->payload[24]);
+    ip_len = ntohl(get_u_int32_t(packet->payload, 24));
 
     if(24 + 4 + ip_len + 4 < packet->payload_packet_len) {
-      uuid_len = ntohl(*(u_int32_t *)&packet->payload[24 + 4 + ip_len]);
+      uuid_len = ntohl(get_u_int32_t(packet->payload, 24 + 4 + ip_len));
 
       if(packet->payload_packet_len == 24 + 4 + ip_len + 4 + uuid_len + 4) {
         NDPI_LOG_DBG(ndpi_struct, "found P2P Zoom\n");

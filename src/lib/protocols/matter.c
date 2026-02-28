@@ -59,7 +59,7 @@ static void ndpi_search_matter(struct ndpi_detection_module_struct *ndpi_struct,
            (security_flags & 0x1C) == 0 /* Reserved bits */ &&
             session_type <= 2) {
 
-          uint16_t session_id = ntohs(*(uint16_t *)&packet->payload[1]);
+          uint16_t session_id = ntohs(get_u_int16_t(packet->payload, 1));
           
           if((session_type == 0 && session_id != 0) ||  
              (session_type > 0 && session_id == 0)) {   

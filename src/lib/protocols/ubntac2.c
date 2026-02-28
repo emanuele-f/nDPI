@@ -45,7 +45,7 @@ static void ndpi_search_ubntac2(struct ndpi_detection_module_struct *ndpi_struct
      (packet->udp->source == htons(10001) || packet->udp->dest == htons(10001)) &&
      (ntohs(get_u_int16_t(packet->payload, 0)) == 0x0206 ||
       ntohs(get_u_int16_t(packet->payload, 0)) == 0x0100 /* discovery request/reply */) &&
-     (4 + ntohs(*(u_int16_t *)&packet->payload[2]) == packet->payload_packet_len)) {
+     (4 + ntohs(get_u_int16_t(packet->payload, 2)) == packet->payload_packet_len)) {
     NDPI_LOG_INFO(ndpi_struct, "UBNT AirControl 2 request\n");
     ndpi_int_ubntac2_add_connection(ndpi_struct, flow);
 
@@ -53,7 +53,7 @@ static void ndpi_search_ubntac2(struct ndpi_detection_module_struct *ndpi_struct
     off = 4;
     while (off + 3 < packet->payload_packet_len) {
       tlv_type = packet->payload[off];
-      tlv_length = ntohs(*(u_int16_t *)&packet->payload[off + 1]);
+      tlv_length = ntohs(get_u_int16_t(packet->payload, off + 1));
 
       NDPI_LOG_DBG2(ndpi_struct, "0x%x Len %d\n", tlv_type, tlv_length);
 

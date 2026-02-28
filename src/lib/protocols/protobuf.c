@@ -160,7 +160,7 @@ static void ndpi_search_protobuf(struct ndpi_detection_module_struct *ndpi_struc
           uint64_t as_u64;
           double as_double;
         } value;
-        value.as_u64 = le64toh(*(uint64_t *)&packet->payload[offset]);
+        value.as_u64 = le64toh(get_u_int64_t(packet->payload, offset));
         printf("[I64: %lld / %llu / %lf]", (long long int)value.as_i64,
                (unsigned long long int)value.as_u64, value.as_double);
 #endif
@@ -209,7 +209,7 @@ static void ndpi_search_protobuf(struct ndpi_detection_module_struct *ndpi_struc
           uint32_t as_u32;
           float as_float;
         } value;
-        value.as_u32 = le32toh(*(uint32_t *)&packet->payload[offset]);
+        value.as_u32 = le32toh(get_u_int32_t(packet->payload, offset));
         printf("[I32: %d / %u / %f]", value.as_i32, value.as_u32, value.as_float);
 #endif
         offset += 4;

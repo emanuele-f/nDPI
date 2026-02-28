@@ -54,7 +54,7 @@ static void ndpi_check_lisp(struct ndpi_detection_module_struct *ndpi_struct, st
     if(packet->tcp->source == lisp_port1 ||
        packet->tcp->dest == lisp_port1) {
       if(packet->payload_packet_len >= 8) {
-        u_int16_t msg_len = ntohs(*(u_int16_t *)&packet->payload[2]);
+        u_int16_t msg_len = ntohs(get_u_int16_t(packet->payload, 2));
 	if(msg_len >= packet->payload_packet_len &&
 	   /* End marker: we don't handle fragmented messages */
 	   packet->payload[packet->payload_packet_len - 1] == 0xE9 &&

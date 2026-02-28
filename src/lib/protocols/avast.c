@@ -44,7 +44,7 @@ static void ndpi_search_avast(struct ndpi_detection_module_struct *ndpi_struct,
   }
 
   if (strncmp((char *)&packet->payload[0], "NOSA", NDPI_STATICSTRING_LEN("NOSA")) == 0 &&
-      ntohs(*(uint16_t *)&packet->payload[4]) == packet->payload_packet_len)
+      ntohs(get_u_int16_t(packet->payload, 4)) == packet->payload_packet_len)
   {
     ndpi_int_avast_add_connection(ndpi_struct, flow);
     return;

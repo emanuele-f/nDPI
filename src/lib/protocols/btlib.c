@@ -343,7 +343,8 @@ void cb_data(bt_parse_data_cb_t *cbd) {
     return;
   }
   if((*cbd->buf == 't' || *cbd->buf == 'v') && !cbd->buf[1]) {
-    u_int64_t d = *(u_int64_t*)s;
+    u_int64_t d;
+    memcpy(&d, s, sizeof(d));
     switch(cbd->v.s.l) {
     case 2:
       d &= 0xffffllu; d = htons(d); break;

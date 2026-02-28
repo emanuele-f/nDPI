@@ -131,8 +131,9 @@ u_int32_t ndpi_hash_string_len(const char *str, u_int len) {
   results are mixed, scrambled and cast to 32-bit
 */
 u_int32_t ndpi_quick_16_byte_hash(const u_int8_t *in_16_bytes_long) {
-  u_int64_t a = *(u_int64_t*)(in_16_bytes_long + 0);
-  u_int64_t c = *(u_int64_t*)(in_16_bytes_long + 8);
+  u_int64_t a, c;
+  memcpy(&a, in_16_bytes_long + 0, sizeof(a));
+  memcpy(&c, in_16_bytes_long + 8, sizeof(c));
 
   // multipliers are taken from sprng.org, addends are prime
   a = a * 0x2c6fe96ee78b6955 + 0x9af64480a3486659;
