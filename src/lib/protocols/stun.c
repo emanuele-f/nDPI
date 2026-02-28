@@ -210,7 +210,7 @@ static void parse_ip_port_attribute(const u_int8_t *payload, u_int16_t payload_l
     if(protocol_family == 0x01 /* IPv4 */ &&
        real_len == 8) {
       u_int16_t port = ntohs(*((u_int16_t*)&payload[off+6]));
-      u_int32_t ip   = ntohl(*((u_int32_t*)&payload[off+8]));
+      u_int32_t ip   = ntohl(get_u_int32_t(payload, off+8));
 
       /* Only the first attribute ever in the flow */
       if(ap->port == 0) {
@@ -229,10 +229,10 @@ static void parse_ip_port_attribute(const u_int8_t *payload, u_int16_t payload_l
       u_int16_t port = ntohs(*((u_int16_t*)&payload[off+6]));
       u_int32_t ip[4];
 
-      ip[0] = *((u_int32_t *)&payload[off + 8]);
-      ip[1] = *((u_int32_t *)&payload[off + 12]);
-      ip[2] = *((u_int32_t *)&payload[off + 16]);
-      ip[3] = *((u_int32_t *)&payload[off + 20]);
+      ip[0] = get_u_int32_t(payload, off + 8);
+      ip[1] = get_u_int32_t(payload, off + 12);
+      ip[2] = get_u_int32_t(payload, off + 16);
+      ip[3] = get_u_int32_t(payload, off + 20);
 
       /* Only the first attribute ever in the flow */
       if(ap->port == 0) {
@@ -274,7 +274,7 @@ static void parse_xor_ip_port_attribute(struct ndpi_detection_module_struct *ndp
       u_int16_t port;
 
       port = ntohs(*((u_int16_t *)&payload[off + 6])) ^ (magic_cookie >> 16);
-      ip = *((u_int32_t *)&payload[off + 8]) ^ htonl(magic_cookie);
+      ip = get_u_int32_t(payload, off + 8) ^ htonl(magic_cookie);
 
       /* Only the first attribute ever in the flow */
       if(ap->port == 0) {
@@ -312,10 +312,10 @@ static void parse_xor_ip_port_attribute(struct ndpi_detection_module_struct *ndp
       u_int16_t port;
 
       port = ntohs(*((u_int16_t *)&payload[off + 6])) ^ (magic_cookie >> 16);
-      ip[0] = *((u_int32_t *)&payload[off + 8]) ^ htonl(magic_cookie);
-      ip[1] = *((u_int32_t *)&payload[off + 12]) ^ htonl(transaction_id[0]);
-      ip[2] = *((u_int32_t *)&payload[off + 16]) ^ htonl(transaction_id[1]);
-      ip[3] = *((u_int32_t *)&payload[off + 20]) ^ htonl(transaction_id[2]);
+      ip[0] = get_u_int32_t(payload, off + 8) ^ htonl(magic_cookie);
+      ip[1] = get_u_int32_t(payload, off + 12) ^ htonl(transaction_id[0]);
+      ip[2] = get_u_int32_t(payload, off + 16) ^ htonl(transaction_id[1]);
+      ip[3] = get_u_int32_t(payload, off + 20) ^ htonl(transaction_id[2]);
 
       /* Only the first attribute ever in the flow */
       if(ap->port == 0) {
@@ -398,10 +398,10 @@ int is_stun(struct ndpi_detection_module_struct *ndpi_struct,
 
   msg_type = ntohs(*((u_int16_t *)&payload[0]));
   msg_len = ntohs(*((u_int16_t *)&payload[2]));
-  magic_cookie = ntohl(*((u_int32_t *)&payload[4]));
-  transaction_id[0] = ntohl(*((u_int32_t *)&payload[8]));
-  transaction_id[1] = ntohl(*((u_int32_t *)&payload[12]));
-  transaction_id[2] = ntohl(*((u_int32_t *)&payload[16]));
+  magic_cookie = ntohl(get_u_int32_t(payload, 4));
+  transaction_id[0] = ntohl(get_u_int32_t(payload, 8));
+  transaction_id[1] = ntohl(get_u_int32_t(payload, 12));
+  transaction_id[2] = ntohl(get_u_int32_t(payload, 16));
 
   /* No magic_cookie on classic-stun */
   /* Let's hope that we don't have anymore classic-stun over TCP */

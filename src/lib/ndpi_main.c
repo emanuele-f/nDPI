@@ -11280,7 +11280,8 @@ char *ndpi_get_ip_string(const ndpi_ip_addr_t *ip, char *buf, u_int buf_len) {
   const u_int8_t *a = (const u_int8_t *) &ip->ipv4;
 
   if(ndpi_is_ipv6(ip)) {
-    struct in6_addr addr = *(struct in6_addr *)&ip->ipv6.u6_addr;
+    struct in6_addr addr;
+    memcpy(addr.s6_addr, ip->ipv6.u6_addr.u6_addr8, 16);
 
     if(inet_ntop(AF_INET6, &addr, buf, buf_len) == NULL)
       buf[0] = '\0';
