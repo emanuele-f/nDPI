@@ -46,11 +46,15 @@
 #endif
 
 #include "third_party/include/ndpi_patricia.h"
+
+#ifndef NDPI_SLIM
 #include "third_party/include/libinjection.h"
 #include "third_party/include/libinjection_sqli.h"
 #include "third_party/include/libinjection_xss.h"
-#include "third_party/include/uthash.h"
 #include "third_party/include/rce_injection.h"
+#endif
+
+#include "third_party/include/uthash.h"
 
 #include "ndpi_replace_printf.h"
 #include "ndpi_sha256.h"
@@ -1978,6 +1982,8 @@ static int ndpi_url_decode(const char *s, char *out) {
 
 /* ********************************** */
 
+#ifndef NDPI_SLIM
+
 static int ndpi_is_sql_injection(char* query) {
   struct libinjection_sqli_state state;
 
@@ -2102,6 +2108,8 @@ static int ndpi_is_rce_injection(char* query) {
 
 #endif
 
+#endif // NDPI_SLIM
+
 /* ********************************** */
 
 ndpi_risk_enum ndpi_validate_url(struct ndpi_detection_module_struct *ndpi_str,
@@ -2137,6 +2145,7 @@ ndpi_risk_enum ndpi_validate_url(struct ndpi_detection_module_struct *ndpi_str,
 	} else if(decoded[0] != '\0') {
 	  /* Valid string */
 
+#ifndef NDPI_SLIM
 	  if(ndpi_is_xss_injection(decoded))
 	    rc = NDPI_URL_POSSIBLE_XSS;
 	  else if(ndpi_is_sql_injection(decoded))
@@ -2149,6 +2158,7 @@ ndpi_risk_enum ndpi_validate_url(struct ndpi_detection_module_struct *ndpi_str,
 #ifdef URL_CHECK_DEBUG
 	  printf("=>> [rc: %u] %s\n", rc, decoded);
 #endif
+#endif // NDPI_SLIM
 	}
 
 	ndpi_free(decoded);

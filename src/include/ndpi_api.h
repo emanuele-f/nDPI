@@ -2192,6 +2192,8 @@ extern "C" {
 
   /* ******************************* */
 
+#ifndef NDPI_SLIM
+
   /*
     Bitmap based on compressed bitmaps
     implemented by https://roaringbitmap.org
@@ -2279,6 +2281,8 @@ extern "C" {
   void         ndpi_filter_free(ndpi_filter *f);
   size_t       ndpi_filter_size(ndpi_filter *f);
   u_int32_t    ndpi_filter_cardinality(ndpi_filter *f);
+
+#endif // NDPI_SLIM
 
   /* ******************************* */
 

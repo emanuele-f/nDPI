@@ -582,6 +582,7 @@ static u_int32_t ndpi_cache_hash_hostname_ip(struct ndpi_detection_module_struct
  */
 bool ndpi_cache_hostname_ip(struct ndpi_detection_module_struct *ndpi_struct,
 			    ndpi_ip_addr_t *ip_addr, char *hostname) {
+#ifndef NDPI_SLIM
   if(ndpi_struct->dns_hostname.cache == NULL)
     ndpi_struct->dns_hostname.cache = ndpi_filter_alloc();
 
@@ -601,6 +602,10 @@ bool ndpi_cache_hostname_ip(struct ndpi_detection_module_struct *ndpi_struct,
 
     return(ndpi_filter_add(ndpi_struct->dns_hostname.cache, hashval));
   }
+#else
+  (void) ip_addr;
+  (void) hostname;
+#endif
 
   return(false);
 }
@@ -615,6 +620,7 @@ bool ndpi_cache_hostname_ip(struct ndpi_detection_module_struct *ndpi_struct,
 */
 bool ndpi_cache_find_hostname_ip(struct ndpi_detection_module_struct *ndpi_struct,
 				 ndpi_ip_addr_t *ip_addr, char *hostname) {
+#ifndef NDPI_SLIM
   if(ndpi_struct->dns_hostname.cache) {
     u_int32_t hashval = ndpi_cache_hash_hostname_ip(ndpi_struct, ip_addr, hostname, false);
     bool ret;
@@ -637,6 +643,10 @@ bool ndpi_cache_find_hostname_ip(struct ndpi_detection_module_struct *ndpi_struc
 
     return(ret);
   }
+#else
+  (void) ip_addr;
+  (void) hostname;
+#endif
 
   return(false);
 }
@@ -644,6 +654,7 @@ bool ndpi_cache_find_hostname_ip(struct ndpi_detection_module_struct *ndpi_struc
 /* ***************************************************** */
 
 void ndpi_cache_hostname_ip_swap(struct ndpi_detection_module_struct *ndpi_struct) {
+#ifndef NDPI_SLIM
   if(ndpi_struct->cfg.hostname_dns_check_enabled) {
     if(ndpi_struct->dns_hostname.cache_shadow)
       ndpi_filter_free(ndpi_struct->dns_hostname.cache_shadow);
@@ -651,6 +662,9 @@ void ndpi_cache_hostname_ip_swap(struct ndpi_detection_module_struct *ndpi_struc
     ndpi_struct->dns_hostname.cache_shadow = ndpi_struct->dns_hostname.cache;
     ndpi_struct->dns_hostname.cache        = ndpi_filter_alloc();
   }
+#else
+  (void) ndpi_struct;
+#endif
 }
 
 /* ***************************************************** */

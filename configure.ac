@@ -23,6 +23,7 @@ AC_ARG_ENABLE(gprof, AS_HELP_STRING([--enable-gprof], [Enable CPU/HEAP profiling
 AC_ARG_ENABLE(code-coverage, AS_HELP_STRING([--enable-code-coverage], [Generate Code Coverage report]))
 AC_ARG_WITH(local-libgcrypt, AS_HELP_STRING([--with-local-libgcrypt], [Build with libgcrypt (if present) instead of the enclosed gcrypt light]))
 AC_ARG_ENABLE(tls-sigs, AS_HELP_STRING([--enable-tls-sigs], [Enable TLS Client signature algorithm dissection. Rarely used, but requires significantly more memory.]))
+AC_ARG_ENABLE(slim, AS_HELP_STRING([--enable-slim], [Build a slim version of nDPI, without content matching and some utilities.]))
 AC_ARG_ENABLE(npcap, AS_HELP_STRING([--disable-npcap], [msys2 only: Disable linkage against the wpcap/npcap import library in windows/WpdPack/Lib.]))
 AC_ARG_WITH(nbpf-path, AS_HELP_STRING([--with-nbpf-path], [nBPF library custom path; default: ${srcdir}/../PF_RING/userland/nbpf]),[NBPF_HOME=$withval],[NBPF_HOME="`cd ${srcdir}/../PF_RING/userland/nbpf 2>/dev/null && pwd || echo ${srcdir}/../PF_RING/userland/nbpf`"])
 AC_ARG_WITH(lto-and-gold-linker, AS_HELP_STRING([--with-lto-and-gold-linker], [Build with LTO and Gold linker]))
@@ -97,6 +98,11 @@ AS_IF([test "x${enable_code_coverage}" = "xyes"],[
   NDPI_CFLAGS="${NDPI_CFLAGS} -fprofile-arcs -ftest-coverage"
   NDPI_LDFLAGS="${NDPI_LDFLAGS} --coverage"
 ])
+
+AS_IF([test "${enable_slim+set}" = set],[
+  NDPI_SLIM=1
+  NDPI_CFLAGS="${NDPI_CFLAGS} -DNDPI_SLIM"
+],[NDPI_SLIM=0])
 
 AS_IF([test "${enable_npcap+set}" = set],[DISABLE_NPCAP=1],[DISABLE_NPCAP=0])
 
@@ -516,4 +522,5 @@ AC_SUBST(EXE_SUFFIX)
 AC_SUBST(NDPI_CFLAGS)
 AC_SUBST(NDPI_LDFLAGS)
 AC_SUBST(NDPI_BASE_DIR)
+AC_SUBST(NDPI_SLIM)
 AC_OUTPUT

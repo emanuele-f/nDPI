@@ -14,6 +14,7 @@ VPATH = @srcdir@:@srcdir@/protocols:@srcdir@/third_party/src:@srcdir@/third_part
 AR = @AR@
 CC = @CC@
 RANLIB = @RANLIB@
+NDPI_SLIM=@NDPI_SLIM@
 #
 # Installation directories
 #
@@ -38,7 +39,13 @@ CFLAGS_roaring.c := -Wno-unused-function -Wno-attributes
 LDFLAGS    += @NDPI_LDFLAGS@
 LIBS       = @ADDITIONAL_LIBS@ @LIBS@ @GPROF_LIBS@
 
-OBJECTS   = $(patsubst $(srcdir)/protocols/%.c, %.o, $(wildcard $(srcdir)/protocols/*.c)) $(patsubst $(srcdir)/third_party/src/%.c, %.o, $(wildcard $(srcdir)/third_party/src/*.c)) $(patsubst $(srcdir)/third_party/src/hll/%.c, %.o, $(wildcard $(srcdir)/third_party/src/hll/*.c)) $(patsubst $(srcdir)/%.c, %.o, $(wildcard $(srcdir)/*.c))
+OBJECTS  := $(patsubst $(srcdir)/protocols/%.c, %.o, $(wildcard $(srcdir)/protocols/*.c)) $(patsubst $(srcdir)/third_party/src/%.c, %.o, $(wildcard $(srcdir)/third_party/src/*.c)) $(patsubst $(srcdir)/third_party/src/hll/%.c, %.o, $(wildcard $(srcdir)/third_party/src/hll/*.c)) $(patsubst $(srcdir)/%.c, %.o, $(wildcard $(srcdir)/*.c))
+
+ifeq ($(NDPI_SLIM),1)
+OBJECTS := $(filter-out libinjection_html5.o libinjection_xss.o libinjection_sqli.o, $(OBJECTS))
+OBJECTS := $(filter-out roaring.o roaring_v2.o ndpi_bitmap.o ndpi_bitmap64_fuse.o ndpi_binary_bitmap.o ndpi_filter.o, $(OBJECTS))
+endif
+
 HEADERS   = $(wildcard $(top_srcdir)/src/include/*.h) $(wildcard $(top_builddir)/src/include/*.h) $(wildcard $(srcdir)/*.h)
 NDPI_VERSION_MAJOR   = @NDPI_MAJOR@
 NDPI_LIB_STATIC      = libndpi.a
